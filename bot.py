@@ -1,29 +1,41 @@
+import os
+import logging
 import google.generativeai as genai
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import os
 
-# 🔑 Берём ключи из переменных окружения (Render → Environment)
+# Логирование
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+
+# Токены
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Настраиваем Gemini
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_TOKEN не найден в переменных окружения!")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY не найден в переменных окружения!")
+
+# Настройка Gemini
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.0-flash")
+model = genai.GenerativeModel("gemini-pro")
 
-# /start
+# Хэндлеры
 def start(update, context):
-    update.message.reply_text("Привет! Я бот с Gemini 🤖")
+    update.message.reply_text("Привет! Напиши что-нибудь, и я отвечу с помощью Gemini.")
 
-# ответ на текст
 def handle_message(update, context):
-    user_message = update.message.text
+    user_text = update.message.text
     try:
-        response = model.generate_content(user_message)
-        bot_reply = response.text
+        response = model.generate_content(user_text)
+        reply = response.text if response and hasattr(response, "text") else "Не удалось получить ответ."
     except Exception as e:
-        bot_reply = f"Ошибка: {e}"
-    update.message.reply_text(bot_reply)
+        reply = f"Ошибка при запросе к Gemini: {e}"
+    update.message.reply_text(reply)
 
+# Главная функция
 def main():
     updater = Updater(TELEGRAM_TOKEN, use_context=True)
     dp = updater.dispatcher
@@ -31,7 +43,6 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
-    print("✅ Бот запущен…")
     updater.start_polling()
     updater.idle()
 
