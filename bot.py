@@ -32,6 +32,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(bot_reply)
 
 def main():
+    if not TELEGRAM_TOKEN:
+        raise ValueError("TELEGRAM_TOKEN не найден в переменных окружения")
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY не найден в переменных окружения")
+
     app = Application.builder().token(TELEGRAM_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
