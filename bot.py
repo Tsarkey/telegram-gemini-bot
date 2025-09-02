@@ -1,3 +1,5 @@
+import subprocess, sys
+subprocess.run([sys.executable, "-m", "pip", "show", "python-telegram-bot"])
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
@@ -47,3 +49,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
