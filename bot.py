@@ -3,22 +3,25 @@ import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-# 🔑 Токены из переменных окружения (Render → Environment)
+# Берём ключи из переменных окружения
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-print("DEBUG TELEGRAM_TOKEN:", TELEGRAM_TOKEN)
-print("DEBUG GEMINI_API_KEY:", GEMINI_API_KEY)
+print(f"DEBUG TELEGRAM_TOKEN: {TELEGRAM_TOKEN!r}")
+print(f"DEBUG GEMINI_API_KEY: {GEMINI_API_KEY!r}")
 
-# Настраиваем Gemini
+if not TELEGRAM_TOKEN or not GEMINI_API_KEY:
+    raise RuntimeError("❌ Не найдены переменные окружения TELEGRAM_TOKEN или GEMINI_API_KEY!")
+
+# Настройка Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# Команда /start
+# /start команда
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Ну привет. Чего изволишь?")
+    await update.message.reply_text("Привет! Я бот на Render + Gemini 🤖")
 
-# Ответ на текстовые сообщения
+# Ответ на сообщения
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     try:
@@ -29,17 +32,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(bot_reply)
 
 def main():
-    if not TELEGRAM_TOKEN:
-        raise ValueError("❌ TELEGRAM_TOKEN не найден в переменных окружения")
-    if not GEMINI_API_KEY:
-        raise ValueError("❌ GEMINI_API_KEY не найден в переменных окружения")
-
     app = Application.builder().token(TELEGRAM_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    print("✅ Бот запущен...")
+    print("✅ Бот запущен и ждёт сообщения...")
     app.run_polling()
 
 if __name__ == "__main__":
