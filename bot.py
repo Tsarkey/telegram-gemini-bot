@@ -4,8 +4,12 @@ from telegram.ext import Application, CommandHandler, MessageHandler, ContextTyp
 import os
 
 # 🔑 Берём ключи из переменных окружения (Render → Environment)
-TELEGRAM_TOKEN = os.getenv("8178900121:AAE8jn5jYM-i7MSaDpN23owlwIvPNRYVsr4")
-GEMINI_API_KEY = os.getenv("AIzaSyBw3jsGJyvUvb_UeMHmpQqDFo9ednZeTng")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Debug: проверяем, что токены подтянулись
+print("DEBUG TELEGRAM_TOKEN:", repr(TELEGRAM_TOKEN))
+print("DEBUG GEMINI_API_KEY:", repr(GEMINI_API_KEY))
 
 # Настраиваем Gemini
 genai.configure(api_key=GEMINI_API_KEY)
