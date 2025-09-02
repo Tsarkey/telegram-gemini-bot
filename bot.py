@@ -1,42 +1,51 @@
-import os
 import google.generativeai as genai
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import os
 
-# Берём ключи из переменных окружения
+# 🔑 Берём ключи из переменных окружения (Render → Environment)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-print(f"DEBUG TELEGRAM_TOKEN: {TELEGRAM_TOKEN!r}")
-print(f"DEBUG GEMINI_API_KEY: {GEMINI_API_KEY!r}")
+# Проверим, что токены не пустые (для отладки в логах Render)
+print("DEBUG TELEGRAM_TOKEN:", TELEGRAM_TOKEN)
+print("DEBUG GEMINI_API_KEY:", GEMINI_API_KEY)
 
-if not TELEGRAM_TOKEN or not GEMINI_API_KEY:
-    raise RuntimeError("❌ Не найдены переменные окружения TELEGRAM_TOKEN или GEMINI_API_KEY!")
-
-# Настройка Gemini
+# Настраиваем Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# /start команда
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привет! Я бот на Render + Gemini 🤖")
 
-# Ответ на сообщения
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Команда /start
+def start(update, context):
+    update.message.reply_text("Ну привет. Чего изволишь?")
+
+
+# Ответ на текстовые сообщения
+def handle_message(update, context):
     user_message = update.message.text
+
     try:
         response = model.generate_content(user_message)
         bot_reply = response.text
     except Exception as e:
         bot_reply = f"Ошибка: {e}"
-    await update.message.reply_text(bot_reply)
+
+    update.message.reply_text(bot_reply)
+
 
 def main():
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("✅ Бот запущен и ждёт сообщения...")
-    app.run_polling()
+    # Создаём Updater
+    updater = Updater(token=TELEGRAM_TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    # Регистрируем команды и обработчики
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    print("Бот запущен...")
+    updater.start_polling()
+    updater.idle()
+
 
 if __name__ == "__main__":
     main()
