@@ -1,10 +1,11 @@
 import google.generativeai as genai
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+import os
 
-# 🔑 Вставь сюда ключи
-TELEGRAM_TOKEN = "8178900121:AAE8jn5jYM-i7MSaDpN23owlwIvPNRYVsr4"
-GEMINI_API_KEY = "AIzaSyBw3jsGJyvUvb_UeMHmpQqDFo9ednZeTng"
+# 🔑 Берём ключи из переменных окружения (Render → Environment)
+TELEGRAM_TOKEN = os.getenv("8178900121:AAE8jn5jYM-i7MSaDpN23owlwIvPNRYVsr4")
+GEMINI_API_KEY = os.getenv("AIzaSyBw3jsGJyvUvb_UeMHmpQqDFo9ednZeTng")
 
 # Настраиваем Gemini
 genai.configure(api_key=GEMINI_API_KEY)
